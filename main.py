@@ -2,11 +2,12 @@ import stable_whisper
 import torch
 import uuid
 import sys
+import os.path
 
 input_path = sys.argv[1]
-output_path = '/srv/cifs_rw/whisper_transcriptions'
-
-unique_filename = str(uuid.uuid4())
+output_dir = '/srv/cifs_rw/whisper_transcriptions'
+unique_filename = str(uuid.uuid4()) + '.srt'
+output_path = os.path.join(output_dir, unique_filename)
 cuda = torch.cuda.is_available()
 
 if cuda:
