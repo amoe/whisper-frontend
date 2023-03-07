@@ -3,6 +3,7 @@ import socket
 import stable_whisper
 import torch
 import multiprocessing
+import uuid
 
 
 def task(queue, input_path):
