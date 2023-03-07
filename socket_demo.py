@@ -22,10 +22,11 @@ def task(queue, x, y):
     queue.put(x + y)
 
 SOCKET_BACKLOG = 0
+BIND_HOST = '192.168.0.1'
 
 sock = socket.socket()
 sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-sock.bind(('localhost', 49152))
+sock.bind((BIND_HOST, 49152))
 sock.listen(SOCKET_BACKLOG)
 
 commands = {
