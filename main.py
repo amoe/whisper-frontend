@@ -17,7 +17,7 @@ else:
 
 
 print("Loading model.")
-model = stable_whisper.load_model('medium')
+model = stable_whisper.load_model('small')   # loopkever can only use small
 print("Loaded model.")
 
 
