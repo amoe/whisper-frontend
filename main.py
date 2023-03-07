@@ -1,6 +1,12 @@
 import stable_whisper
 import torch
+import uuid
+import sys
 
+input_path = sys.argv[1]
+output_path = '/srv/cifs_rw/whisper_transcriptions'
+
+unique_filename = str(uuid.uuid4())
 cuda = torch.cuda.is_available()
 
 if cuda:
@@ -20,8 +26,10 @@ beam_size = 4
 best_of = 3
 temperature = 0.0
 
+
+
 results = model.transcribe(
-    'test.mkv', language='fr', verbose=False,
+    input_path, language='fr', verbose=False,
     condition_on_previous_text=False,
     no_speech_threshold=no_speech_threshold,
     compression_ratio_threshold=compression_ratio_threshold,
@@ -30,4 +38,4 @@ results = model.transcribe(
     temperature=temperature
 )
 
-stable_whisper.results_to_sentence_srt(results, 'audio.srt')
+stable_whisper.results_to_sentence_srt(results, output_path)
