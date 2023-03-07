@@ -63,7 +63,7 @@ while True:
 
     commandstr = bytestr.decode('utf8')
 
-    parts = commandstr.split()
+    parts = commandstr.split(maxsplit=1)
 
     if not parts:
         raise Exception('bad')
