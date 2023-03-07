@@ -61,7 +61,7 @@ while True:
     bytestr = conn.recv(1024)
     conn.close()
 
-    commandstr = bytestr.decode('utf8')
+    commandstr = bytestr.decode('utf8').rstrip()
 
     parts = commandstr.split(maxsplit=1)
 
