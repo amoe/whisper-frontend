@@ -29,10 +29,6 @@ sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 sock.bind((BIND_HOST, 49152))
 sock.listen(SOCKET_BACKLOG)
 
-commands = {
-    b's': 'start',
-    b'q': 'query'
-}
 
 queue = multiprocessing.Queue()
 
@@ -41,17 +37,23 @@ while True:
     conn, address = sock.accept()
     print(conn)
     print(address)
-    bytestr = conn.recv(1)
+    bytestr = conn.recv(1024)
     conn.close()
-    print(bytestr)
 
-    action = commands[bytestr]
+    commandstr = bytestr.decode('utf8')
 
-    if action == 'start':
+    parts = commandstr.split()
+
+    if not parts:
+        raise Exception('bad')
+
+    command = parts[0]
+
+    if command == 's':
         process = multiprocessing.Process(target=task, args=(queue, 1,2))
         process.start()
         print("Created whisper process with pid", process.pid)
-    elif action == 'query':
+    elif command == 'q':
         value = queue.get()
         print("value from queue was", value)
     else:
