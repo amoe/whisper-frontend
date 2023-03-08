@@ -46,6 +46,7 @@ def task(queue, input_path):
     queue.put({'success': True})
 
 
+
 def main():
     SOCKET_BACKLOG = 0
     BIND_HOST = '192.168.0.1'
@@ -88,5 +89,7 @@ def main():
     conn.close()
     sock.close()
 
+# Beware that the main method MUST be guarded with this on windows, otherwise
+# subprocess will hang without any message
 if __name__ == '__main__':
     main()
