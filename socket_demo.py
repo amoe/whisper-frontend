@@ -23,7 +23,7 @@ def task(queue, input_path):
         fprint("CUDA not available.")
 
     fprint("Loading model.")
-    model = stable_whisper.load_model('small')   # loopkever can only use small
+    model = stable_whisper.load_model('medium')   # loopkever can only use small
     fprint("Loaded model.")
 
     no_speech_threshold = 0.7
