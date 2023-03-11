@@ -12,10 +12,10 @@ def fprint(*args, **kwargs):
     print(*args, **kwargs, flush=True)
 
 
-def task(queue, input_path, output_dir):
+def task(input_path, output_dir, job_id):
     fprint("Launched task with process", os.getpid())
     output_dir = '/srv/cifs_rw/whisper_transcriptions'
-    unique_filename = str(uuid.uuid4()) + '.srt'
+    unique_filename = str(job_id) + '.srt'
     output_path = os.path.join(output_dir, unique_filename)
     cuda = torch.cuda.is_available()
 
@@ -53,8 +53,8 @@ def error_callback(e):
     raise e
 
 
-def serve_forever(sock, pool: Pool, config, manager):
-    queue = manager.Queue()
+def serve_forever(sock, pool: Pool, config):
+    jobs = {}
     while True:
         conn, address = sock.accept()
         print(conn)
@@ -72,16 +72,21 @@ def serve_forever(sock, pool: Pool, config, manager):
         command = parts[0]
 
         if command == 's':
-            args = (queue, parts[1], config.get('main', 'output_dir'))
+            job_id = uuid.uuid4()
+            args = (parts[1], config.get('main', 'output_dir'), job_id)
             fprint("Calling with args", args)
             res = pool.apply_async(task, args=args, error_callback=error_callback)
             fprint("Created task, got async result", res)
+            jobs[job_id] = res
             # we don't do anything with the result for now and keep relying
             # on the queue to pass results, yet pool can actually return the
             # result
         elif command == 'q':
-            value = queue.get()
+            the_job = list(jobs.keys())[0]
+            fprint("querying job", the_job)
+            value = jobs[the_job].get()
             print("value from queue was", value)
+            del jobs[the_job]
         else:
             raise Exception('no')
 
@@ -103,8 +108,7 @@ def main():
     
     print("Accepting connections")
     with Pool(processes=1) as pool:
-        with Manager() as manager:
-            serve_forever(sock, pool, config, manager)
+        serve_forever(sock, pool, config)
         
     sock.close()
 
