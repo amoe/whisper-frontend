@@ -52,6 +52,9 @@ def task(input_path, output_dir, job_id):
 def error_callback(e):
     raise e
 
+def ready_callback(v):
+    fprint("Ready callback with value", v)
+
 
 def serve_forever(sock, pool: Pool, config):
     jobs = {}
@@ -75,7 +78,7 @@ def serve_forever(sock, pool: Pool, config):
             job_id = uuid.uuid4()
             args = (parts[1], config.get('main', 'output_dir'), job_id)
             fprint("Calling with args", args)
-            res = pool.apply_async(task, args=args, error_callback=error_callback)
+            res = pool.apply_async(task, args=args, callback=ready_callback, error_callback=error_callback)
             fprint("Created task, got async result", res)
             jobs[job_id] = res
             # we don't do anything with the result for now and keep relying
