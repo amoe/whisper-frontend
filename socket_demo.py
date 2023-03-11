@@ -68,6 +68,7 @@ def serve_forever(sock, pool: Pool, queue: Queue, config):
         if command == 's':
             args = (queue, parts[1], config.get('main', 'output_dir'))
             res = pool.apply_async(task, args=args)
+            fprint("Created task, got async result", res)
             # we don't do anything with the result for now and keep relying
             # on the queue to pass results, yet pool can actually return the
             # result
