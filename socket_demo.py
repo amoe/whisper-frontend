@@ -12,6 +12,7 @@ def fprint(*args, **kwargs):
 
 
 def task(queue, input_path):
+    fprint("Launched task with process", os.getpid())
     output_dir = '/srv/cifs_rw/whisper_transcriptions'
     unique_filename = str(uuid.uuid4()) + '.srt'
     output_path = os.path.join(output_dir, unique_filename)
@@ -46,20 +47,7 @@ def task(queue, input_path):
     queue.put({'success': True})
 
 
-
-def main():
-    SOCKET_BACKLOG = 0
-    BIND_HOST = '192.168.0.1'
-
-    sock = socket.socket()
-    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    sock.bind((BIND_HOST, 49152))
-    sock.listen(SOCKET_BACKLOG)
-
-
-    queue = multiprocessing.Queue()
-
-    print("Accepting connections")
+def serve_forever(pool: Pool):
     while True:
         conn, address = sock.accept()
         print(conn)
@@ -77,16 +65,32 @@ def main():
         command = parts[0]
 
         if command == 's':
-            process = multiprocessing.Process(target=task, args=(queue, parts[1]))
-            process.start()
-            print("Created whisper process with pid", process.pid)
+            res = pool.apply_async(task, args=(queue, parts[1]))
+            # we don't do anything with the result for now and keep relying
+            # on the queue to pass results, yet pool can actually return the
+            # result
         elif command == 'q':
             value = queue.get()
             print("value from queue was", value)
         else:
             raise Exception('no')
 
-    conn.close()
+
+def main():
+    SOCKET_BACKLOG = 0
+    BIND_HOST = '192.168.0.1'
+
+    sock = socket.socket()
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    sock.bind((BIND_HOST, 49152))
+    sock.listen(SOCKET_BACKLOG)
+
+    queue = multiprocessing.Queue()
+    
+    print("Accepting connections")
+    with Pool(processes=1) as pool:
+        serve_forever(pool)
+        
     sock.close()
 
 # Beware that the main method MUST be guarded with this on windows, otherwise
