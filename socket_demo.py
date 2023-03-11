@@ -50,6 +50,8 @@ def task(input_path, output_dir, job_id):
     return result
 
 def task2(x, y):
+    fprint("Launched task with process", os.getpid())
+    fprint("Returning")
     return x + y
 
 def error_callback(e):
