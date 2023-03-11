@@ -7,12 +7,15 @@ import uuid
 import os
 from multiprocessing import Pool, Queue
 
+# Queue *must* be globally scoped, can't be passed to a task
+queue = Queue()
+
 
 def fprint(*args, **kwargs):
     print(*args, **kwargs, flush=True)
 
 
-def task(queue, input_path, output_dir):
+def task(input_path, output_dir):
     fprint("Launched task with process", os.getpid())
     output_dir = '/srv/cifs_rw/whisper_transcriptions'
     unique_filename = str(uuid.uuid4()) + '.srt'
@@ -45,7 +48,12 @@ def task(queue, input_path, output_dir):
     )
 
     stable_whisper.results_to_sentence_srt(results, output_path)
-    queue.put({'success': True})
+    result = {'success': True}
+    queue.put(result)
+    return result
+
+def error_callback(e):
+    raise e
 
 
 def serve_forever(sock, pool: Pool, queue: Queue, config):
@@ -66,8 +74,9 @@ def serve_forever(sock, pool: Pool, queue: Queue, config):
         command = parts[0]
 
         if command == 's':
-            args = (queue, parts[1], config.get('main', 'output_dir'))
-            res = pool.apply_async(task, args=args)
+            args = (parts[1], config.get('main', 'output_dir'))
+            fprint("Calling with args", args)
+            res = pool.apply_async(task, args=args, error_callback=error_callback)
             fprint("Created task, got async result", res)
             # we don't do anything with the result for now and keep relying
             # on the queue to pass results, yet pool can actually return the
@@ -93,7 +102,6 @@ def main():
     sock.bind((config.get('main', 'bind_host'), 49152))
     sock.listen(SOCKET_BACKLOG)
 
-    queue = Queue()
     
     print("Accepting connections")
     with Pool(processes=1) as pool:
