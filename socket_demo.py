@@ -2,9 +2,10 @@ import time
 import socket
 import stable_whisper
 import torch
-import multiprocessing
+import configparser
 import uuid
 import os
+from multiprocessing import Pool, Queue
 
 
 def fprint(*args, **kwargs):
@@ -47,7 +48,7 @@ def task(queue, input_path):
     queue.put({'success': True})
 
 
-def serve_forever(pool: Pool):
+def serve_forever(sock, pool: Pool, queue: Queue):
     while True:
         conn, address = sock.accept()
         print(conn)
@@ -77,19 +78,24 @@ def serve_forever(pool: Pool):
 
 
 def main():
+    config = configparser.ConfigParser()
+    
+    with open('whisper-frontend.ini') as f:
+        config.read_file(f)
+    
     SOCKET_BACKLOG = 0
     BIND_HOST = '192.168.0.1'
 
     sock = socket.socket()
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    sock.bind((BIND_HOST, 49152))
+    sock.bind((config.get('main', 'bind_host'), 49152))
     sock.listen(SOCKET_BACKLOG)
 
-    queue = multiprocessing.Queue()
+    queue = Queue()
     
     print("Accepting connections")
     with Pool(processes=1) as pool:
-        serve_forever(pool)
+        serve_forever(sock, pool, queue)
         
     sock.close()
 
