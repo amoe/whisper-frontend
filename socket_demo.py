@@ -12,7 +12,7 @@ def fprint(*args, **kwargs):
     print(*args, **kwargs, flush=True)
 
 
-def task(queue, input_path):
+def task(queue, input_path, output_dir):
     fprint("Launched task with process", os.getpid())
     output_dir = '/srv/cifs_rw/whisper_transcriptions'
     unique_filename = str(uuid.uuid4()) + '.srt'
@@ -48,7 +48,7 @@ def task(queue, input_path):
     queue.put({'success': True})
 
 
-def serve_forever(sock, pool: Pool, queue: Queue):
+def serve_forever(sock, pool: Pool, queue: Queue, config):
     while True:
         conn, address = sock.accept()
         print(conn)
@@ -66,7 +66,8 @@ def serve_forever(sock, pool: Pool, queue: Queue):
         command = parts[0]
 
         if command == 's':
-            res = pool.apply_async(task, args=(queue, parts[1]))
+            args = (queue, parts[1], config.get('main', 'output_dir'))
+            res = pool.apply_async(task, args=args)
             # we don't do anything with the result for now and keep relying
             # on the queue to pass results, yet pool can actually return the
             # result
@@ -95,7 +96,7 @@ def main():
     
     print("Accepting connections")
     with Pool(processes=1) as pool:
-        serve_forever(sock, pool, queue)
+        serve_forever(sock, pool, queue, config)
         
     sock.close()
 
