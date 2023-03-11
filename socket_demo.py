@@ -14,6 +14,7 @@ def fprint(*args, **kwargs):
 
 def task(input_path, output_dir, job_id):
     fprint("Launched task with process", os.getpid())
+    return {'success': True}
     output_dir = '/srv/cifs_rw/whisper_transcriptions'
     unique_filename = str(job_id) + '.srt'
     output_path = os.path.join(output_dir, unique_filename)
@@ -46,7 +47,6 @@ def task(input_path, output_dir, job_id):
 
     stable_whisper.results_to_sentence_srt(results, output_path)
     result = {'success': True}
-    queue.put(result)
     return result
 
 def error_callback(e):
