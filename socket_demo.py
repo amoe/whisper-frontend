@@ -49,11 +49,6 @@ def task(input_path, output_dir, job_id):
     result = {'success': True}
     return result
 
-def task2(x, y):
-    fprint("Launched task with process", os.getpid())
-    fprint("Returning")
-    return x + y
-
 def error_callback(e):
     raise e
 
@@ -83,8 +78,7 @@ def serve_forever(sock, pool: Pool, config):
             job_id = uuid.uuid4()
             args = (parts[1], config.get('main', 'output_dir'), job_id)
             fprint("Calling with args", args)
-            # res = pool.apply_async(task, args=args, callback=ready_callback, error_callback=error_callback)
-            res = pool.apply_async(task2, args=(1,2))
+            res = pool.apply_async(task, args=args, callback=ready_callback, error_callback=error_callback)
             fprint("Created task, got async result", res)
             jobs[job_id] = res
             # we don't do anything with the result for now and keep relying
