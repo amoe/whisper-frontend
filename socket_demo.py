@@ -5,17 +5,14 @@ import torch
 import configparser
 import uuid
 import os
-from multiprocessing import Pool, Queue
-
-# Queue *must* be globally scoped, can't be passed to a task
-queue = Queue()
+from multiprocessing import Pool, Manager
 
 
 def fprint(*args, **kwargs):
     print(*args, **kwargs, flush=True)
 
 
-def task(input_path, output_dir):
+def task(queue, input_path, output_dir):
     fprint("Launched task with process", os.getpid())
     output_dir = '/srv/cifs_rw/whisper_transcriptions'
     unique_filename = str(uuid.uuid4()) + '.srt'
@@ -56,7 +53,8 @@ def error_callback(e):
     raise e
 
 
-def serve_forever(sock, pool: Pool, queue: Queue, config):
+def serve_forever(sock, pool: Pool, config, manager):
+    queue = manager.Queue()
     while True:
         conn, address = sock.accept()
         print(conn)
@@ -74,7 +72,7 @@ def serve_forever(sock, pool: Pool, queue: Queue, config):
         command = parts[0]
 
         if command == 's':
-            args = (parts[1], config.get('main', 'output_dir'))
+            args = (queue, parts[1], config.get('main', 'output_dir'))
             fprint("Calling with args", args)
             res = pool.apply_async(task, args=args, error_callback=error_callback)
             fprint("Created task, got async result", res)
@@ -105,7 +103,8 @@ def main():
     
     print("Accepting connections")
     with Pool(processes=1) as pool:
-        serve_forever(sock, pool, queue, config)
+        with Manager() as manager:
+            serve_forever(sock, pool, config, manager)
         
     sock.close()
 
