@@ -5,8 +5,7 @@ import torch
 import configparser
 import uuid
 import os
-from multiprocessing import Pool, Manager
-
+import multiprocessing
 
 def fprint(*args, **kwargs):
     print(*args, **kwargs, flush=True)
@@ -54,7 +53,7 @@ def ready_callback(v):
     fprint("Ready callback with value", v)
 
 
-def serve_forever(sock, pool: Pool, config):
+def serve_forever(sock, pool: multiprocessing.Pool, config):
     jobs = {}
     while True:
         conn, address = sock.accept()
@@ -93,6 +92,9 @@ def serve_forever(sock, pool: Pool, config):
 
 
 def main():
+    # Force unix systems to use the more limited spawn API, to more closely
+    # match Windows.
+    context = multiprocessing.get_context('spawn')
     config = configparser.ConfigParser()
     
     with open('whisper-frontend.ini') as f:
@@ -108,7 +110,7 @@ def main():
 
     
     print("Accepting connections")
-    with Pool(processes=1) as pool:
+    with context.Pool(processes=1) as pool:
         serve_forever(sock, pool, config)
         
     sock.close()
