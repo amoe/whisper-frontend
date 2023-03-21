@@ -167,6 +167,14 @@ optional = false
 python-versions = ">=3.7"
 
 [[package]]
+name = "psycopg2"
+version = "2.9.5"
+description = "psycopg2 - Python-PostgreSQL Database Adapter"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[[package]]
 name = "pyyaml"
 version = "6.0"
 description = "YAML parser and emitter for Python"
@@ -364,7 +372,7 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "b983170904a434bc4d3e0ff42973eb39389168278ac9e71e770b96af601cff65"
+content-hash = "adcd22ebb2b43a5978ea890f77ffdb57869a7c5b420216229fd4f7b070e7d9c6"
 
 [metadata.files]
 certifi = []
@@ -383,6 +391,7 @@ nvidia-cuda-runtime-cu11 = []
 nvidia-cudnn-cu11 = []
 openai-whisper = []
 packaging = []
+psycopg2 = []
 pyyaml = []
 regex = []
 requests = []

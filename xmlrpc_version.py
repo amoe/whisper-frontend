@@ -4,6 +4,7 @@ import torch
 import os
 import configparser
 import multiprocessing
+import psycopg2
 from xmlrpc.server import SimpleXMLRPCServer
 
 def fprint(*args, **kwargs):
@@ -16,7 +17,10 @@ def ready_callback(v):
     fprint("Ready callback with value", v)
 
 
-def task(input_path, output_dir, job_id):
+
+def task(
+    input_path, output_dir, job_id, db_name, db_username, db_password, db_hostname
+):
     fprint("Launched task with process", os.getpid())
     unique_filename = str(job_id) + '.srt'
     output_path = os.path.join(output_dir, unique_filename)
@@ -48,6 +52,19 @@ def task(input_path, output_dir, job_id):
     )
 
     stable_whisper.results_to_sentence_srt(results, output_path)
+    with open(output_path, 'r') as f:
+        srt_content = f.read()
+
+    conn = psycopg2.connect(host=db_hostname, dbname=db_name, user=db_username, password=db_password)
+    cur = conn.cursor()
+    cur.execute(
+        "INSERT INTO item (pathname, completed_date, subtitles) VALUES (%s, CURRENT_DATE, %s)",
+        (input_path, srt_content)
+    )
+    conn.commit()
+    cur.close()
+    conn.close()
+
     result = {'success': True}
     return result
 
@@ -63,7 +80,15 @@ class JobServer:
 
     def start_job(self, input_path):
         job_id = uuid.uuid4()
-        args = (input_path, self.config.get('main', 'output_dir'), job_id)
+        args = (
+            input_path,
+            self.config.get('main', 'output_dir'),
+            job_id,
+            self.config.get('main', 'db_name'),
+            self.config.get('main', 'db_username'),
+            self.config.get('main', 'db_password'),
+            self.config.get('main', 'db_hostname')
+        )
         fprint("Calling with args", args)
         res = self.pool.apply_async(task, args=args, callback=ready_callback, error_callback=error_callback)
         fprint("Created task, got async result", res)
