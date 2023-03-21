@@ -56,6 +56,7 @@ def task(
         srt_content = f.read()
 
     conn = psycopg2.connect(host=db_hostname, dbname=db_name, user=db_username, password=db_password)
+    conn.set_client_encoding('UTF8')
     cur = conn.cursor()
     cur.execute(
         "INSERT INTO item (pathname, completed_date, subtitles) VALUES (%s, CURRENT_DATE, %s)",
