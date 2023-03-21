@@ -52,7 +52,7 @@ def task(
     )
 
     stable_whisper.results_to_sentence_srt(results, output_path)
-    with open(output_path, 'r') as f:
+    with open(output_path, 'r', encoding='utf-8') as f:
         srt_content = f.read()
 
     conn = psycopg2.connect(host=db_hostname, dbname=db_name, user=db_username, password=db_password)
