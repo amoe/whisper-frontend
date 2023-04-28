@@ -1,3 +1,4 @@
+from xmlrpc.client import ServerProxy
 import configparser
 import psycopg2
 
@@ -36,3 +37,8 @@ diff = lines.difference(transcribed)
 print(len(transcribed))
 print(len(lines))
 print(len(diff))
+
+
+with ServerProxy('http://elang:49152/') as proxy:
+    for path in diff:
+        proxy.start_job(path, 'fr')

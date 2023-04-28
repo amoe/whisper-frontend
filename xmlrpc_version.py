@@ -19,7 +19,7 @@ def ready_callback(v):
 
 
 def task(
-    input_path, output_dir, job_id, db_name, db_username, db_password, db_hostname
+    input_path, lang_code: str, output_dir, job_id, db_name, db_username, db_password, db_hostname
 ):
     fprint("Launched task with process", os.getpid())
     unique_filename = str(job_id) + '.srt'
@@ -42,7 +42,7 @@ def task(
     temperature = 0.0
 
     results = model.transcribe(
-        input_path, language='fr', verbose=False,
+        input_path, language=lang_code, verbose=False,
         condition_on_previous_text=False,
         no_speech_threshold=no_speech_threshold,
         compression_ratio_threshold=compression_ratio_threshold,
@@ -79,10 +79,11 @@ class JobServer:
     def add(self, x, y):
         return x + y
 
-    def start_job(self, input_path):
+    def start_job(self, input_path, lang_code: str):
         job_id = uuid.uuid4()
         args = (
             input_path,
+            lang_code,
             self.config.get('main', 'output_dir'),
             job_id,
             self.config.get('main', 'db_name'),
