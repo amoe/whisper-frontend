@@ -6,8 +6,8 @@ authors = ["David Banks <amoe@solasistim.net>"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-stable-ts = "^1.1.5"
-psycopg2 = "^2.9.5"
+stable-ts = "2.0.0"
+psycopg2 = "2.9.5"
 
 [tool.poetry.dev-dependencies]
 
