@@ -1,4 +1,5 @@
 import uuid
+import whisper
 import stable_whisper
 import torch
 import os
@@ -99,6 +100,9 @@ class JobServer:
 
     
 def main():
+    print("Whisper version:", whisper.__version__)
+    print("Launched with stable-whisper version:", stable_whisper.__version__)
+    
     # Force unix systems to use the more limited spawn API, to more closely
     # match Windows.
     context = multiprocessing.get_context('spawn')
