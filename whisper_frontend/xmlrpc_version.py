@@ -8,6 +8,8 @@ import multiprocessing
 import psycopg2
 from xmlrpc.server import SimpleXMLRPCServer
 
+WHISPER_MODEL = 'medium'
+
 def fprint(*args, **kwargs):
     print(*args, **kwargs, flush=True)
 
@@ -33,7 +35,7 @@ def task(
         fprint("CUDA not available.")
 
     fprint("Loading model.")
-    model = stable_whisper.load_model('medium')   # loopkever can only use small
+    model = stable_whisper.load_model(WHISPER_MODEL)   # loopkever can only use small
     fprint("Loaded model.")
 
     no_speech_threshold = 0.7
@@ -42,7 +44,7 @@ def task(
     best_of = 3
     temperature = 0.0
 
-    results = model.transcribe(
+    result = model.transcribe(
         input_path, language=lang_code, verbose=False,
         condition_on_previous_text=False,
         no_speech_threshold=no_speech_threshold,
@@ -52,7 +54,11 @@ def task(
         temperature=temperature
     )
 
-    stable_whisper.results_to_sentence_srt(results, output_path)
+    
+    # These options disable all 'fancy' stuff for subtitles, e.g. colouring
+    # per-word.  This loses some information but makes sure the subtitles remain
+    # plain-text which makes them easy to search.
+    result.to_srt_vtt(output_path, vtt=False, segment_level=False, word_level=False)
     with open(output_path, 'r', encoding='utf-8') as f:
         srt_content = f.read()
 
@@ -101,6 +107,7 @@ class JobServer:
     
 def main():
     print("Whisper version:", whisper.__version__)
+    print("Whisper model:", WHISPER_MODEL)
     print("Launched with stable-whisper version:", stable_whisper.__version__)
     
     # Force unix systems to use the more limited spawn API, to more closely
@@ -116,8 +123,14 @@ def main():
         instance = JobServer(pool, config)
         server.register_instance(instance)
         print("Accepting connections")
-        server.serve_forever()
-        
+        try:
+            server.serve_forever()
+        except KeyboardInterrupt as e:
+            print("Shutting down.")
+            pool.terminate()
+            pool.close()
+            pool.join()
+
 
 if __name__ == '__main__':
     main()
