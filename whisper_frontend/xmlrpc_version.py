@@ -58,7 +58,7 @@ def task(
     # These options disable all 'fancy' stuff for subtitles, e.g. colouring
     # per-word.  This loses some information but makes sure the subtitles remain
     # plain-text which makes them easy to search.
-    result.to_srt_vtt(output_path, vtt=False, segment_level=False, word_level=False)
+    result.to_srt_vtt(output_path, vtt=False, segment_level=True, word_level=False)
     with open(output_path, 'r', encoding='utf-8') as f:
         srt_content = f.read()
 
