@@ -40,8 +40,6 @@ def task(
 
     no_speech_threshold = 0.7
     compression_ratio_threshold = 1.7
-    beam_size = 4
-    best_of = 3
     temperature = 0.0
 
     result = model.transcribe(
@@ -49,9 +47,8 @@ def task(
         condition_on_previous_text=False,
         no_speech_threshold=no_speech_threshold,
         compression_ratio_threshold=compression_ratio_threshold,
-        beam_size=beam_size,
-        best_of=best_of,
-        temperature=temperature
+        temperature=temperature,
+        vad=True
     )
 
     
