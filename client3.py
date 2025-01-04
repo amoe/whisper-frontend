@@ -1,6 +1,14 @@
 from xmlrpc.client import ServerProxy
 import configparser
 import psycopg2
+import sys
+
+"""
+Send jobs for everything not yet analysed in a given directory.
+
+Provide a filename containing a list of paths (in a server-compatible format)
+on the command line.
+"""
 
 def fetch_transcribed(config):
     conn_args = {
@@ -28,8 +36,10 @@ with open('whisper-frontend.ini') as f:
     config.read_file(f)
 
 transcribed = set(fetch_transcribed(config))
-    
-with open('/home/amoe/rikerpaths') as f:
+
+path_file = sys.argv[1]
+
+with open(path_file) as f:
     lines = set([l.rstrip() for l in f.readlines()])
 
 
