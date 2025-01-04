@@ -27,3 +27,22 @@ used with lower amounts of VRAM on the host machine, using faster engines such
 as `faster-whisper`, and `whisperx` might bundle some of the correction
 capabilities.  It's impractical to evaluate the respective behaviours of these
 solutions for me at the moment.
+
+## Windows Install
+
+I recommend using "Terminal" rather than the stock Windows command prompt
+program.
+
+Download the source code to `~/whisper-frontend`, the full path will look
+something like `C:\Users\amoeb\Documents\whisper-frontend`.
+
+Create a venv locally under a `venv` subdirectory and install dependencies into
+this.  The dependencies are quite simple and can be installed using pip.
+
+It's possible to deploy this on Windows using the following method:
+
+* Press `Win+R` to load the Run dialog
+* `shell:startup`
+* This will take you to the Startup folder
+
+Do this after installing the software to a venv using Poetry
