@@ -36,7 +36,6 @@ results = slurp_subtitles(config)
 print("Loaded", len(results), "subs")
 
 for subtitles, pathname in results:
-    print(pathname)
     parsed = pysrt.from_string(subtitles)
 
     for item in parsed:
