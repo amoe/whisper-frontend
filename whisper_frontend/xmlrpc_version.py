@@ -7,6 +7,9 @@ import configparser
 import multiprocessing
 import psycopg2
 from xmlrpc.server import SimpleXMLRPCServer
+import logging
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
 WHISPER_MODEL = 'medium'
 
@@ -14,7 +17,7 @@ def fprint(*args, **kwargs):
     print(*args, **kwargs, flush=True)
 
 def error_callback(e):
-    fprint("Job failed:", repr(e))
+    logging.error("Job failed", exc_info=e)
 
 def ready_callback(v):
     fprint("Ready callback with value", v)
