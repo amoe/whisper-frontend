@@ -14,7 +14,7 @@ def fprint(*args, **kwargs):
     print(*args, **kwargs, flush=True)
 
 def error_callback(e):
-    raise e
+    fprint("Job failed:", repr(e))
 
 def ready_callback(v):
     fprint("Ready callback with value", v)
