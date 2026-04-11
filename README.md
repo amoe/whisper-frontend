@@ -19,6 +19,19 @@ To use the scripts, create a file containing your database credentials, named
 The server will use these credentials to write completed transcription jobs to
 the given PostgreSQL database.
 
+## Client tools
+
+The client tools read a file under `~/.config` named
+`whisper-frontend-client-config.toml`.
+
+Use this file as such:
+
+```
+[main]
+remote_host = "somehost"
+remote_port = 49152
+```
+
 ## Radar
 
 Apparently there are newer and faster versions of Whisper now that allow using
