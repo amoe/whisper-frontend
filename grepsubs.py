@@ -7,6 +7,7 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-i", '--ignore-case', action='store_true')
+parser.add_argument('-m', '--match-path', action='store')
 parser.add_argument('pattern', type=str)
 args = parser.parse_args()
 
@@ -44,6 +45,10 @@ results = slurp_subtitles(config)
 print("Loaded", len(results), "subs")
 
 for subtitles, pathname in results:
+    if args.match_path:
+        if not re.search(args.match_path, pathname):
+            continue
+    
     parsed = pysrt.from_string(subtitles)
 
     for item in parsed:
