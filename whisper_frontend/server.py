@@ -66,8 +66,8 @@ def task(
     conn.set_client_encoding('UTF8')
     cur = conn.cursor()
     cur.execute(
-        "INSERT INTO item (pathname, completed_date, subtitles) VALUES (%s, CURRENT_DATE, %s)",
-        (input_path, srt_content)
+        "INSERT INTO item (pathname, completed_date, subtitles, language) VALUES (%s, CURRENT_DATE, %s, %s)",
+        (input_path, srt_content, lang_code)
     )
     conn.commit()
     cur.close()
