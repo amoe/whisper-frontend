@@ -59,3 +59,5 @@ It's possible to deploy this on Windows using the following method:
 * This will take you to the Startup folder
 
 Do this after installing the software to a venv using Poetry
+
+The entry point is `whisper_frontend/server.py`.
