@@ -1,0 +1,3 @@
+ALTER TABLE item ADD COLUMN language CHARACTER(2) NULL;
+UPDATE item SET language = 'en' WHERE language IS NULL;
+ALTER TABLE item ALTER COLUMN language SET NOT NULL;
