@@ -8,6 +8,8 @@ import multiprocessing
 import psycopg2
 from xmlrpc.server import SimpleXMLRPCServer
 import logging
+from typing import Optional
+import subprocess
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
@@ -23,11 +25,25 @@ def ready_callback(v):
     fprint("Ready callback with value", v)
 
 
+DURATION_COMMAND = ("ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1")
 
+def get_duration(path) -> Optional[int]:
+    try:
+        bval = subprocess.check_output(DURATION_COMMAND + (path,))
+        cleaned = bval.decode('utf-8').rstrip()
+        return int(float(cleaned) * 1000)
+    except subprocess.CalledProcessError as e:
+        return None
+    except ValueError as e:
+        return None
+
+    
 def task(
     input_path, lang_code: str, output_dir, job_id, db_name, db_username, db_password, db_hostname
 ):
     fprint("Launched task with process", os.getpid())
+
+    duration = get_duration(input_path)
     unique_filename = str(job_id) + '.srt'
     output_path = os.path.join(output_dir, unique_filename)
     cuda = torch.cuda.is_available()
@@ -66,8 +82,8 @@ def task(
     conn.set_client_encoding('UTF8')
     cur = conn.cursor()
     cur.execute(
-        "INSERT INTO item (pathname, completed_date, subtitles, language) VALUES (%s, CURRENT_DATE, %s, %s)",
-        (input_path, srt_content, lang_code)
+        "INSERT INTO item (pathname, completed_date, subtitles, language, duration) VALUES (%s, CURRENT_DATE, %s, %s, %s)",
+        (input_path, srt_content, lang_code, duration)
     )
     conn.commit()
     cur.close()
