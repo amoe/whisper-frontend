@@ -7,7 +7,9 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-i", '--ignore-case', action='store_true')
-parser.add_argument('-m', '--match-path', action='store')
+parser.add_argument('-m', '--match-path', action='store', help='only search subtitles where pathname matches the given regex')
+parser.add_argument('-l', "--list-matches", action='store_true')
+parser.add_argument('-w', '--word', action='store_true', help='treat PATTERN as a whole word')
 parser.add_argument('pattern', type=str)
 args = parser.parse_args()
 
@@ -23,7 +25,7 @@ def slurp_subtitles(config):
     conn = psycopg2.connect(**conn_args)
     cur = conn.cursor()
 
-    cur.execute("SELECT subtitles, pathname FROM item")
+    cur.execute("SELECT subtitles, pathname FROM item ORDER BY pathname")
 
     qry_result = cur.fetchall()
 
@@ -38,7 +40,10 @@ config = configparser.ConfigParser()
 with open('whisper-frontend.ini') as f:
     config.read_file(f)
 
-requested = args.pattern
+if args.word:
+    requested = fr'\b{args.pattern}\b'
+else:
+    requested = args.pattern
 
 print("Loading subs")
 results = slurp_subtitles(config)
@@ -60,6 +65,9 @@ for subtitles, pathname in results:
             flags = re.IGNORECASE
         else:
             flags = 0
-        
+
         if re.search(requested, item_text, flags):
-            print(f'{pathname}: {item_text}')
+            if args.list_matches:
+                print(pathname)
+            else:
+                print(f'{pathname}: {item_text}')
